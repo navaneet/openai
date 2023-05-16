@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Code Review Chat with AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5; /*lighter grey color*/
+            padding: 5%;
+            margin: 0;
+        }
+        #chatbox {
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            background-color: white;
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        #chat-input {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1.2em;
+        }
+        .user-message, .ai-message {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            line-height: 1.6;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            display:inline-block;
+        }
+        .user-message {
+            color: blue;
+            background-color: #f0f8ff; /*light blue*/
+            margin-left: 0px;
+        }
+        .ai-message {
+            color: red;
+            background-color: #fff0f5; /*light red*/
+            margin-right: 0px;
+        }
+        #loader {
+            display: none;
+            font-size: 1.2em;
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fafafa;
+            margin-bottom: 20px;
+            color: black;
+        }
+        pre {
+            font-family: 'Courier New', monospace;
+            white-space: pre;
+            margin: 0;
+        }
+        @media only screen and (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .user-message, .ai-message {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="chatbox"></div>
+    <div id="loader">Thinking...</div>
+    <textarea id="chat-input" placeholder="Enter your question or code here..." onkeydown="checkEnter(event)"></textarea>
+    <script>
+        const chatbox = document.getElementById('chatbox');
+        const chatInput = document.getElementById('chat-input');
+        const loader = document.getElementById('loader');
+        const API_ENDPOINT = 'https://aoai-2-sub2.openai.azure.com/openai/deployments/gpt-35-turbo/chat/completions?api-version=2023-03-15-preview';
+        const API_KEY = '60878cc488ea4918bede2ab72b9a6b97'; // replace 'YOUR_API_KEY' with your actual API key
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        function checkEnter(e) {
+            if(e.keyCode === 13) {
+            	e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function sendMessage() {
+            const code = chatInput.value;
+            chatbox.innerHTML += `<div class="user-message"><b>You:</b> <pre>${escapeHtml(code)}</pre></div>`;
+            chatInput.value = '';
+            chatbox.scrollTop = chatbox.scrollHeight; // scroll to the bottom
+            sendRequest(code);
+        }
+
+        function sendRequest(code) {
+            loader.style.display = 'block';
+            const data = {
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You're chatting with the Sherlock Holmes of AI, developed by the whizzbang crew at OpenAI. I specialize in code review, time complexity analysis, and software engineering - and I do it all while cracking wise!\n\nDon't mix it up though - my jokes may tickle your funny bone, but my code review is no laughing matter. I'm here to pull apart the puzzle of code logic and software engineering, and put it back together, better than ever.\n\nSo, ready to roll? Toss me your gnarliest piece of code, and I'll give it a thorough once-over, all while keeping the vibe light and the laughs coming. Your challenge, should you dare to accept, is to keep a straight face while we debug and optimize. After all, they say laughter is the best medicine, but did you ever hear of it fixing a bug?\n\nHere's a freebie to kick things off: Why don't programmers like nature? It has too many bugs!"
+                    },
+                    {
+                        "role": "user",
+                        "content": code
+                    }
+                ],
+                "temperature": 0.7,
+                "top_p": 0.95,
+                "frequency_penalty": 0,
+                "presence_penalty": 0,
+                "max_tokens": 800,
+                "stop": null
+            };
+            fetch(API_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'api-key': `${API_KEY}`
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(json => {
+                loader.style.display = 'none';
+                const chat = json['choices'][0]['message']['content'];
+                chatbox.innerHTML += `<div class="ai-message"><b>AI:</b> <pre>${escapeHtml(chat)}</pre></div>`;
+                chatbox.scrollTop = chatbox.scrollHeight; // scroll to the bottom
+            })
+            .catch(error => {
+                loader.style.display = 'none';
+                console.error('There was a problem with the fetch operation: ', error);
+            });
+        }
+    </script>
+</body>
+</html>
