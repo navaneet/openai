@@ -12,7 +12,7 @@ Security: Your code is safe; no data is stored or used for model training.
 
 Installation
 
-Since the tool is web-based, no installation is necessary. Simply go to this link to start using it.
+Since the tool is web-based, no installation is necessary. Simply go to this link https://navaneet.github.io/openai/ to start using it.
 
 Usage
 
