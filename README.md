@@ -1,4 +1,4 @@
-# Code Reviewer
+# AI Code Reviewer
 
 Description
 
