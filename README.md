@@ -1,4 +1,4 @@
-# AI Code Reviewer
+# CodeCheck: Smart Reviews with OpenAI
 
 Description
 
