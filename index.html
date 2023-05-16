@@ -27,15 +27,24 @@
             font-size: 1.2em;
         }
         .user-message, .ai-message {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 10px;
-            line-height: 1.6;
-            word-wrap: break-word;
-            white-space: pre-wrap;
-            display:inline-block;
-        }
+    		border: 1px solid #ddd;
+    		border-radius: 5px;
+    		padding: 10px;
+    		margin-bottom: 10px;
+    		line-height: 1.6;
+    		word-wrap: break-word; /* add this line */
+   			white-space: pre-wrap;
+    		display: block;
+    		overflow-wrap: break-word; /* add this line */
+    		max-width: 100%; /* add this line */
+		}		
+		.user-message pre, .ai-message pre {
+    		white-space: pre-wrap;       /* css-3 */
+    		white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+    		white-space: -pre-wrap;      /* Opera 4-6 */
+    		white-space: -o-pre-wrap;    /* Opera 7 */
+    		word-wrap: break-word;       /* Internet Explorer 5.5+ */
+		}
         .user-message {
             color: blue;
             background-color: #f0f8ff; /*light blue*/
@@ -101,13 +110,18 @@
             }
         }
 
-        function sendMessage() {
-            const code = chatInput.value;
-            chatbox.innerHTML += `<div class="user-message"><b>You:</b> <pre>${escapeHtml(code)}</pre></div>`;
-            chatInput.value = '';
-            chatbox.scrollTop = chatbox.scrollHeight; // scroll to the bottom
-            sendRequest(code);
-        }
+       function sendMessage() {
+    		const code = chatInput.value.trim(); // trim to remove leading and trailing white spaces
+    		if (code === '') {
+        	// input is empty, don't send the message
+        	// alert("Please enter a message before sending.");
+        	return;
+    		}
+   	 		chatbox.innerHTML += `<div class="user-message"><b>You:</b> <pre>${escapeHtml(code)}</pre></div>`;
+    		chatInput.value = '';
+    		chatbox.scrollTop = chatbox.scrollHeight; // scroll to the bottom
+    		sendRequest(code);
+		}
 
         function sendRequest(code) {
             loader.style.display = 'block';
@@ -122,11 +136,11 @@
                         "content": code
                     }
                 ],
-                "temperature": 0.7,
+                "temperature": 0.5,
                 "top_p": 0.95,
                 "frequency_penalty": 0,
                 "presence_penalty": 0,
-                "max_tokens": 800,
+                "max_tokens": 1000,
                 "stop": null
             };
             fetch(API_ENDPOINT, {
