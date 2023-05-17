@@ -103,12 +103,12 @@
             return text.replace(/[&<>"']/g, function(m) { return map[m]; });
         }
 
-        function checkEnter(e) {
-            if(e.keyCode === 13) {
-            	e.preventDefault();
-                sendMessage();
-            }
-        }
+ 		function checkEnter(e) {
+    		if(e.key === 'Enter' && !e.shiftKey) {
+        		e.preventDefault();
+        		sendMessage();
+    		}
+		}
 
        function sendMessage() {
     		const code = chatInput.value.trim(); // trim to remove leading and trailing white spaces
