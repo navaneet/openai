@@ -17,4 +17,4 @@ Since the tool is web-based, no installation is necessary. Simply go to this lin
 Usage
 
 Navigate to the website.
-Paste your code into the designated area and press enter.
+Paste your code or question into the designated area and press enter. If you wish to insert new lines, use the 'Shift' + 'Enter' key combination. 
