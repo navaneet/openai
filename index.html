@@ -138,6 +138,16 @@
                     if (code === "") {
                         return;
                     }
+
+                    // Check if message is too long
+                    if (code.length > 12000) {
+                        // Change to the maximum length you want to allow
+                        chatbox.innerHTML += `<div class="ai-message"><b>AI:</b> <pre>${escapeHtml("Your message is too long. Please keep it under 12000 characters.")}</pre></div>`;
+                        chatInput.value = "";
+                        chatbox.scrollTop = chatbox.scrollHeight;
+                        return;
+                    }
+
                     const lastMessage = userMessages[userMessages.length - 1];
                     if (lastMessage && lastMessage.content === code) {
                         return; // don't save duplicate message
