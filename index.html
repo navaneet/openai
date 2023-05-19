@@ -104,52 +104,44 @@
       <script>
          window.onload = function () {
              localStorage.clear();
-         
              let messageId = 0; // initialize messageId here
-         
              const chatbox = document.getElementById("chatbox");
              const chatInput = document.getElementById("chat-input");
              const loader = document.getElementById("loader");
              const API_ENDPOINT = "https://aoai-2-sub2.openai.azure.com/openai/deployments/gpt-35-turbo/chat/completions?api-version=2023-03-15-preview";
              const API_KEY = "60878cc488ea4918bede2ab72b9a6b97"; // replace 'YOUR_API_KEY' with your actual API key
-         
              const systemMessage = {
                  role: "system",
                  content:
                  "You're now connected with GPT-3.5, an advanced AI developed by OpenAI. I can assist with understanding your code, spotting potential issues, and providing explanations on software engineering concepts, all with a light-hearted approach! Ready to get started? Pass me your code, and let's dive into it together. If it's a well-crafted code snippet, I'll quickly validate its effectiveness so we can focus more on areas that need improvement. However, if we encounter bugs or logic errors, we'll spend more time dissecting and understanding these areas. After all, they say laughter is the best medicine, but it's never fixed a bug! Here's a joke to get us started: Why don't programmers like nature? It has too many bugs! But remember, while I'll do my best to guide and assist, there may be areas beyond my scope. If that's the case, I'll suggest relevant resources or alternative methods for you to find the answers you need. Let's debug, learn, and maybe even have a few laughs along the way.",
              };
-         
              let userMessages = JSON.parse(localStorage.getItem("userMessages")) || [];
              let assistantMessages = [];
-         
              function escapeHtml(text) {
                  return text.replace(/[&<>"']/g, (match) => `&#${match.charCodeAt(0)};`);
              }
-         
              window.checkEnter = function (e) {
                  if (e.key === "Enter" && !e.shiftKey) {
                      e.preventDefault();
                      sendMessage();
                  }
              };
-         
              function sendMessage() {
-                 const code = chatInput.value.trim();
-                 if (code === "") {
-                     return;
-                 }
-         
+                 let code = chatInput.value.trim();
+                   if (code === "") {
+                       return;
+                   }
+                   // Remove extra new lines
+                   code = code.replace(/(\r\n|\n|\r)+/gm, "\n");
                  if (code.length > 12000) {
                      chatbox.innerHTML += `<div class="ai-message"><b>AI:</b> <pre>${escapeHtml("Your message is too long. Please try again.")}</pre></div>`;
                      chatInput.value = "";
                      chatbox.scrollTop = chatbox.scrollHeight;
                      return;
                  }
-         
                  chatbox.innerHTML += `<div class="user-message"><b>You:</b> <pre>${escapeHtml(code)}</pre></div>`;
                  chatInput.value = "";
                  chatbox.scrollTop = chatbox.scrollHeight;
-         
                  const lastMessage = userMessages[userMessages.length - 1];
                  if (!lastMessage || (lastMessage && lastMessage.content !== code)) {
                      userMessages.push({
@@ -161,31 +153,23 @@
                      }
                      localStorage.setItem("userMessages", JSON.stringify(userMessages));
                  }
-         
                  sendRequest(code);
              }
-         
-         
-         
              function sendRequest(code) {
                  loader.style.display = "block";
-         
                  let messagesToSend = [systemMessage];
-         
                  // Filter out duplicate user messages
                  messagesToSend = messagesToSend.concat(userMessages.filter((msg, index, self) =>
                      index === self.findIndex((t) => (
                          t.content === msg.content
                      ))
                  ));
-         
                  // Filter out duplicate assistant messages
                  messagesToSend = messagesToSend.concat(assistantMessages.filter((msg, index, self) =>
                      index === self.findIndex((t) => (
                          t.content === msg.content
                      ))
                  ));
-         
                  // Add the current message
                  messagesToSend.push({
                      role: "user",
@@ -223,7 +207,6 @@
                      newMessageElement.scrollIntoView();
                      messageId += 1;
                      chatbox.scrollTop -= 20;
-         
                      assistantMessages.push({
                          role: "assistant",
                          content: chat,
@@ -244,7 +227,6 @@
                      chatbox.scrollTop -= 20;
                  });
              }
-         
          };
       </script>
    </body>
