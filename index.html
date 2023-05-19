@@ -133,12 +133,6 @@
                  }
                  // Remove extra new lines
                  code = code.replace(/(\r\n|\n|\r)+/gm, "\n");
-                 if (code.length > 10000) {
-                     chatbox.innerHTML += `<div class="ai-message"><b>AI:</b> <pre>${escapeHtml("Your message is too long. Try a shorter one.")}</pre></div>`;
-                     chatInput.value = "";
-                     chatbox.scrollTop = chatbox.scrollHeight;
-                     return;
-                 }
                  chatbox.innerHTML += `<div class="user-message"><b>You:</b> <pre>${escapeHtml(code)}</pre></div>`;
                  chatInput.value = "";
                  chatbox.scrollTop = chatbox.scrollHeight;
