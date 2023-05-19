@@ -128,13 +128,13 @@
              };
              function sendMessage() {
                  let code = chatInput.value.trim();
-                   if (code === "") {
-                       return;
-                   }
-                   // Remove extra new lines
-                   code = code.replace(/(\r\n|\n|\r)+/gm, "\n");
-                 if (code.length > 12000) {
-                     chatbox.innerHTML += `<div class="ai-message"><b>AI:</b> <pre>${escapeHtml("Your message is too long. Please try again.")}</pre></div>`;
+                 if (code === "") {
+                     return;
+                 }
+                 // Remove extra new lines
+                 code = code.replace(/(\r\n|\n|\r)+/gm, "\n");
+                 if (code.length > 10000) {
+                     chatbox.innerHTML += `<div class="ai-message"><b>AI:</b> <pre>${escapeHtml("Your message is too long. Try a shorter one.")}</pre></div>`;
                      chatInput.value = "";
                      chatbox.scrollTop = chatbox.scrollHeight;
                      return;
@@ -155,6 +155,7 @@
                  }
                  sendRequest(code);
              }
+
              function sendRequest(code) {
                  loader.style.display = "block";
                  let messagesToSend = [systemMessage];
@@ -194,7 +195,9 @@
                  })
                  .then((response) => {
                      if (!response.ok) {
-                         throw new Error(`HTTP error! status: ${response.status}`);
+                         return response.json().then(err => {
+                             throw new Error(err.error.message);
+                         });
                      }
                      return response.json();
                  })
@@ -218,12 +221,10 @@
                  })
                  .catch((error) => {
                      loader.style.display = "none";
-                     const errorMessage = "There was a problem with the fetch operation: " + error + ". Please refresh the page and try again.";
-                     const newMessageId = "message-" + messageId;
+                     const errorMessage = `Request failed: ${error.message}`;
+                     const newMessageId = `message-${messageId++}`;
                      chatbox.innerHTML += `<div id="${newMessageId}" class="ai-message"><b>AI:</b> <pre>${escapeHtml(errorMessage)}</pre></div>`;
-                     const newMessageElement = document.getElementById(newMessageId);
-                     newMessageElement.scrollIntoView();
-                     messageId += 1;
+                     document.getElementById(newMessageId).scrollIntoView();
                      chatbox.scrollTop -= 20;
                  });
              }
