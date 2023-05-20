@@ -28,7 +28,7 @@
               border: 2px solid #ddd;
               border-radius: 5px;
               font-size: 1.2em;
-              line-height: 1.7;
+              line-height: 1.5;
           }
           .user-message,
           .ai-message {
@@ -92,135 +92,135 @@
       </style>
    </head>
    <body>
-      <div id="chatbox"></div>
-      <div id="loader">Thinking...</div>
-      <textarea id="chat-input" placeholder="Press Enter to send your message. Shift + Enter to add a new line" onkeydown="checkEnter(event)"></textarea>
-      <script>
-         window.onload = function () {
-             localStorage.clear();
-             let messageId = 0; // initialize messageId here
-             const chatbox = document.getElementById("chatbox");
-             const chatInput = document.getElementById("chat-input");
-             const loader = document.getElementById("loader");
-             const API_ENDPOINT = "https://aoai-2-sub2.openai.azure.com/openai/deployments/gpt-35-turbo/chat/completions?api-version=2023-03-15-preview";
-             const API_KEY = "60878cc488ea4918bede2ab72b9a6b97"; // replace 'YOUR_API_KEY' with your actual API key
-             const systemMessage = {
-                 role: "system",
-                 content:
-                 "You're now connected with GPT-3.5, an advanced AI developed by OpenAI. I can assist with understanding your code, spotting potential issues, and providing explanations on software engineering concepts, all with a light-hearted approach! Ready to get started? Pass me your code, and let's dive into it together. If it's a well-crafted code snippet, I'll quickly validate its effectiveness so we can focus more on areas that need improvement. However, if we encounter bugs or logic errors, we'll spend more time dissecting and understanding these areas. After all, they say laughter is the best medicine, but it's never fixed a bug! Here's a joke to get us started: Why don't programmers like nature? It has too many bugs! But remember, while I'll do my best to guide and assist, there may be areas beyond my scope. If that's the case, I'll suggest relevant resources or alternative methods for you to find the answers you need. Let's debug, learn, and maybe even have a few laughs along the way.",
-             };
-             let userMessages = JSON.parse(localStorage.getItem("userMessages")) || [];
-             let assistantMessages = [];
-             function escapeHtml(text) {
-                 return text.replace(/[&<>"']/g, (match) => `&#${match.charCodeAt(0)};`);
-             }
-             window.checkEnter = function (e) {
-                 if (e.key === "Enter" && !e.shiftKey) {
-                     e.preventDefault();
-                     sendMessage();
-                     if ('ontouchstart' in window) {
-                         chatInput.blur();
-                     }
-                 }
-             };
-             function sendMessage() {
-                 let code = chatInput.value.trim();
-                 if (code === "") {
-                     return;
-                 }
-                 // Remove extra new lines
-                 code = code.replace(/(\r\n|\n|\r)+/gm, "\n");
-                 chatbox.innerHTML += `<div class="user-message"><b>You:</b> <pre>${escapeHtml(code)}</pre></div>`;
-                 chatInput.value = "";
-                 chatbox.scrollTop = chatbox.scrollHeight;
-                 const lastMessage = userMessages[userMessages.length - 1];
-                 if (!lastMessage || (lastMessage && lastMessage.content !== code)) {
-                     userMessages.push({
-                         role: "user",
-                         content: code,
-                     });
-                     // Keep only the last 10 user messages
-                     if (userMessages.length > 10) {
-                         userMessages = userMessages.slice(userMessages.length - 10);
-                     }
-                     localStorage.setItem("userMessages", JSON.stringify(userMessages));
-                 }
-                 sendRequest(code);
-             }
-
-             function sendRequest(code) {
-                 loader.style.display = "block";
-                 let messagesToSend = [systemMessage];
-                 // Filter out duplicate user messages
-                 messagesToSend = messagesToSend.concat(userMessages.filter((msg, index, self) =>
-                     index === self.findIndex((t) => (
-                         t.content === msg.content
-                     ))
-                 ));
-                 // Filter out duplicate assistant messages
-                 messagesToSend = messagesToSend.concat(assistantMessages.filter((msg, index, self) =>
-                     index === self.findIndex((t) => (
-                         t.content === msg.content
-                     ))
-                 ));
-                 // Add the current message
-                 messagesToSend.push({
-                     role: "user",
-                     content: code,
-                 });
-                 const data = {
-                     messages: messagesToSend,
-                     temperature: 0.4,
-                     top_p: 0.9,
-                     frequency_penalty: 0,
-                     presence_penalty: 0,
-                     max_tokens: 4000,
-                     stop: null,
-                 };
-                 fetch(API_ENDPOINT, {
-                     method: "POST",
-                     headers: {
-                         "Content-Type": "application/json",
-                         "api-key": API_KEY,
-                     },
-                     body: JSON.stringify(data),
-                 })
-                 .then((response) => {
-                     if (!response.ok) {
-                         return response.json().then(err => {
-                             throw new Error(err.error.message);
-                         });
-                     }
-                     return response.json();
-                 })
-                 .then((json) => {
-                     loader.style.display = "none";
-                     const chat = json["choices"][0]["message"]["content"];
-                     const newMessageId = "message-" + messageId;
-                     chatbox.innerHTML += `<div id="${newMessageId}" class="ai-message"><b>AI:</b> <pre>${escapeHtml(chat)}</pre></div>`;
-                     const newMessageElement = document.getElementById(newMessageId);
-                     newMessageElement.scrollIntoView();
-                     messageId += 1;
-                     chatbox.scrollTop -= 20;
-                     assistantMessages.push({
-                         role: "assistant",
-                         content: chat,
-                     });
-                     // Keep only the last 10 assistant messages
-                     if (assistantMessages.length > 10) {
-                         assistantMessages = assistantMessages.slice(assistantMessages.length - 10);
-                     }
-                 })
-                 .catch((error) => {
-                     loader.style.display = "none";
-                     const errorMessage = `Request failed: ${error.message}`;
-                     const newMessageId = `message-${messageId++}`;
-                     chatbox.innerHTML += `<div id="${newMessageId}" class="ai-message"><b>AI:</b> <pre>${escapeHtml(errorMessage)}</pre></div>`;
-                     document.getElementById(newMessageId).scrollIntoView();
-                     chatbox.scrollTop -= 20;
-                 });
-             }
-         };
-      </script>
+       <div id="chatbox"></div>
+       <div id="loader">Thinking...</div>
+       <textarea id="chat-input" placeholder="Press Enter to send your message. Shift + Enter to add a new line" onkeydown="checkEnter(event)"></textarea>
+       <script>
+           window.onload = function () {
+               localStorage.clear();
+               let messageId = 0; // initialize messageId here
+               const chatbox = document.getElementById("chatbox");
+               const chatInput = document.getElementById("chat-input");
+               const loader = document.getElementById("loader");
+               const API_ENDPOINT = "https://aoai-2-sub2.openai.azure.com/openai/deployments/gpt-35-turbo/chat/completions?api-version=2023-03-15-preview";
+               const API_KEY = "60878cc488ea4918bede2ab72b9a6b97"; // replace 'YOUR_API_KEY' with your actual API key
+               const systemMessage = {
+                   role: "system",
+                   content:
+                       "You're now connected with GPT-3.5, an advanced AI developed by OpenAI. I can assist with understanding your code, spotting potential issues, and providing explanations on software engineering concepts, all with a light-hearted approach! Ready to get started? Pass me your code, and let's dive into it together. If it's a well-crafted code snippet, I'll quickly validate its effectiveness so we can focus more on areas that need improvement. However, if we encounter bugs or logic errors, we'll spend more time dissecting and understanding these areas. After all, they say laughter is the best medicine, but it's never fixed a bug! Here's a joke to get us started: Why don't programmers like nature? It has too many bugs! But remember, while I'll do my best to guide and assist, there may be areas beyond my scope. If that's the case, I'll suggest relevant resources or alternative methods for you to find the answers you need. Let's debug, learn, and maybe even have a few laughs along the way.",
+               };
+               let userMessages = JSON.parse(localStorage.getItem("userMessages")) || [];
+               let assistantMessages = [];
+               function escapeHtml(text) {
+                   return text.replace(/[&<>"']/g, (match) => `&#${match.charCodeAt(0)};`);
+               }
+               function addMessageToChatbox(role, content) {
+                   const newMessageId = "message-" + messageId;
+                   const messageHtml = `<div id="${newMessageId}" class="${role}-message"><b>${role.charAt(0).toUpperCase() + role.slice(1)}:</b> <pre>${escapeHtml(content)}</pre></div>`;
+                   chatbox.innerHTML += messageHtml;
+                   const newMessageElement = document.getElementById(newMessageId);
+                   newMessageElement.scrollIntoView();
+                   messageId += 1;
+                   chatbox.scrollTop -= 20;
+               }
+               window.checkEnter = function (e) {
+                   if (e.key === "Enter" && !e.shiftKey) {
+                       e.preventDefault();
+                       sendMessage();
+                       if ('ontouchstart' in window) {
+                           chatInput.blur();
+                       }
+                   }
+               };
+               function sendMessage() {
+                   let code = chatInput.value.trim();
+                   if (code === "") {
+                       return;
+                   }
+                   // Remove extra new lines
+                   code = code.replace(/(\r\n|\n|\r)+/gm, "\n");
+                   addMessageToChatbox("user", code);
+                   chatInput.value = "";
+                   chatbox.scrollTop = chatbox.scrollHeight;
+                   const lastMessage = userMessages[userMessages.length - 1];
+                   if (!lastMessage || (lastMessage && lastMessage.content !== code)) {
+                       userMessages.push({
+                           role: "user",
+                           content: code,
+                       });
+                       // Keep only the last 10 user messages
+                       if (userMessages.length > 10) {
+                           userMessages = userMessages.slice(userMessages.length - 10);
+                       }
+                       localStorage.setItem("userMessages", JSON.stringify(userMessages));
+                   }
+                   sendRequest(code);
+               }
+               function sendRequest(code) {
+                   loader.style.display = "block";
+                   let messagesToSend = [systemMessage];
+                   // Filter out duplicate user messages
+                   messagesToSend = messagesToSend.concat(userMessages.filter((msg, index, self) =>
+                       index === self.findIndex((t) => (
+                           t.content === msg.content
+                       ))
+                   ));
+                   // Filter out duplicate assistant messages
+                   messagesToSend = messagesToSend.concat(assistantMessages.filter((msg, index, self) =>
+                       index === self.findIndex((t) => (
+                           t.content === msg.content
+                       ))
+                   ));
+                   // Add the current message
+                   messagesToSend.push({
+                       role: "user",
+                       content: code,
+                   });
+                   const data = {
+                       messages: messagesToSend,
+                       temperature: 0.4,
+                       top_p: 0.9,
+                       frequency_penalty: 0,
+                       presence_penalty: 0,
+                       max_tokens: 4000,
+                       stop: null,
+                   };
+                   fetch(API_ENDPOINT, {
+                       method: "POST",
+                       headers: {
+                           "Content-Type": "application/json",
+                           "api-key": API_KEY,
+                       },
+                       body: JSON.stringify(data),
+                   })
+                   .then((response) => {
+                       if (!response.ok) {
+                           return response.json().then(err => {
+                               throw new Error(err.error.message);
+                           });
+                       }
+                       return response.json();
+                   })
+                   .then((json) => {
+                       loader.style.display = "none";
+                       const chat = json["choices"][0]["message"]["content"];
+                       addMessageToChatbox("ai", chat);
+                       assistantMessages.push({
+                           role: "assistant",
+                           content: chat,
+                       });
+                       // Keep only the last 10 assistant messages
+                       if (assistantMessages.length > 10) {
+                           assistantMessages = assistantMessages.slice(assistantMessages.length - 10);
+                       }
+                   })
+                   .catch((error) => {
+                       loader.style.display = "none";
+                       const errorMessage = `Request failed: ${error.message}`;
+                       addMessageToChatbox("ai", errorMessage);
+                   });
+               }
+           };
+       </script>
    </body>
 </html>
