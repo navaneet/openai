@@ -118,7 +118,9 @@
                  if (e.key === "Enter" && !e.shiftKey) {
                      e.preventDefault();
                      sendMessage();
-                     chatInput.blur();
+                     if ('ontouchstart' in window) {
+                         chatInput.blur();
+                     }
                  }
              };
              function sendMessage() {
