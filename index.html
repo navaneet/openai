@@ -5,90 +5,90 @@
       <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
       <title>Code Review Chat with AI</title>
       <style>
-         body {
-         font-family: Arial, sans-serif;
-         background-color: #f5f5f5; /* lighter grey color */
-         padding: 3.6%;
-         margin: 0;
-         }
-         #chatbox {
-         border: 2px solid #ddd;
-         border-radius: 5px;
-         padding: 20px;
-         background-color: white;
-         height: 350px;
-         overflow-y: auto;
-         margin-bottom: 20px;
-         }
-         #chat-input {
-         height: 110px;
-         width: 100%;
-         padding: 10px;
-         box-sizing: border-box;
-         border: 2px solid #ddd;
-         border-radius: 5px;
-         font-size: 1.2em;
-         line-height: 1.7;
-         }
-         .user-message,
-         .ai-message {
-         border: 1px solid #ddd;
-         border-radius: 5px;
-         padding: 10px;
-         margin-bottom: 10px;
-         line-height: 1.7;
-         word-wrap: break-word;
-         white-space: pre-wrap;
-         display: block;
-         overflow-wrap: break-word;
-         max-width: 100%;
-         }
-         .user-message pre,
-         .ai-message pre {
-         white-space: pre-wrap; /* css-3 */
-         white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
-         white-space: -pre-wrap; /* Opera 4-6 */
-         white-space: -o-pre-wrap; /* Opera 7 */
-         word-wrap: break-word; /* Internet Explorer 5.5+ */
-         }
-         .user-message {
-         color: blue;
-         background-color: #f0f8ff; /* light blue */
-         margin-left: 0px;
-         }
-         .ai-message {
-         color: red;
-         background-color: #fff0f5; /* light red */
-         margin-right: 0px;
-         }
-         #loader {
-         display: none;
-         font-size: 1.2em;
-         text-align: center;
-         padding: 10px;
-         border: 1px solid #ddd;
-         border-radius: 5px;
-         background-color: #fafafa;
-         margin-bottom: 20px;
-         color: #444;
-         animation: loaderAnimation 2s linear infinite;
-         }
-         @keyframes loaderAnimation {
-         0% {
-         opacity: 0;
-         }
-         50% {
-         opacity: 1;
-         }
-         100% {
-         opacity: 0;
-         }
-         }
-         pre {
-         font-family: "Courier New", monospace;
-         white-space: pre;
-         margin: 0;
-         }         
+          body {
+              font-family: Arial, sans-serif;
+              background-color: #f5f5f5; /* lighter grey color */
+              padding: 3.6%;
+              margin: 0;
+          }
+          #chatbox {
+              border: 2px solid #ddd;
+              border-radius: 5px;
+              padding: 20px;
+              background-color: white;
+              height: 350px;
+              overflow-y: auto;
+              margin-bottom: 20px;
+          }
+          #chat-input {
+              height: 110px;
+              width: 100%;
+              padding: 10px;
+              box-sizing: border-box;
+              border: 2px solid #ddd;
+              border-radius: 5px;
+              font-size: 1.2em;
+              line-height: 1.7;
+          }
+          .user-message,
+          .ai-message {
+              border: 1px solid #ddd;
+              border-radius: 5px;
+              padding: 10px;
+              margin-bottom: 10px;
+              line-height: 1.7;
+              word-wrap: break-word;
+              white-space: pre-wrap;
+              display: block;
+              overflow-wrap: break-word;
+              max-width: 100%;
+          }
+          .user-message pre,
+          .ai-message pre {
+              white-space: pre-wrap; /* css-3 */
+              white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+              white-space: -pre-wrap; /* Opera 4-6 */
+              white-space: -o-pre-wrap; /* Opera 7 */
+              word-wrap: break-word; /* Internet Explorer 5.5+ */
+          }
+          .user-message {
+              color: blue;
+              background-color: #f0f8ff; /* light blue */
+              margin-left: 0px;
+          }
+          .ai-message {
+              color: red;
+              background-color: #fff0f5; /* light red */
+              margin-right: 0px;
+          }
+          #loader {
+              display: none;
+              font-size: 1.2em;
+              text-align: center;
+              padding: 10px;
+              border: 1px solid #ddd;
+              border-radius: 5px;
+              background-color: #fafafa;
+              margin-bottom: 20px;
+              color: #444;
+              animation: loaderAnimation 2s linear infinite;
+          }
+          @keyframes loaderAnimation {
+              0% {
+                  opacity: 0;
+              }
+              50% {
+                  opacity: 1;
+              }
+              100% {
+                  opacity: 0;
+              }
+          }
+          pre {
+              font-family: "Courier New", monospace;
+              white-space: pre;
+              margin: 0;
+          }
       </style>
    </head>
    <body>
@@ -118,6 +118,7 @@
                  if (e.key === "Enter" && !e.shiftKey) {
                      e.preventDefault();
                      sendMessage();
+                     chatInput.blur();
                  }
              };
              function sendMessage() {
@@ -136,8 +137,9 @@
                          role: "user",
                          content: code,
                      });
-                     if (userMessages.length > 5) {
-                         userMessages = userMessages.slice(userMessages.length - 5);
+                     // Keep only the last 10 user messages
+                     if (userMessages.length > 10) {
+                         userMessages = userMessages.slice(userMessages.length - 10);
                      }
                      localStorage.setItem("userMessages", JSON.stringify(userMessages));
                  }
@@ -202,9 +204,9 @@
                          role: "assistant",
                          content: chat,
                      });
-                     // Keep only the last 5 assistant messages
-                     if (assistantMessages.length > 5) {
-                         assistantMessages = assistantMessages.slice(assistantMessages.length - 5);
+                     // Keep only the last 10 assistant messages
+                     if (assistantMessages.length > 10) {
+                         assistantMessages = assistantMessages.slice(assistantMessages.length - 10);
                      }
                  })
                  .catch((error) => {
