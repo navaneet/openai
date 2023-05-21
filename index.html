@@ -109,7 +109,7 @@
                    content:
                        "You're now connected with GPT-3.5, an advanced AI developed by OpenAI. I can assist with understanding your code, spotting potential issues, and providing explanations on software engineering concepts, all with a light-hearted approach! Ready to get started? Pass me your code, and let's dive into it together. If it's a well-crafted code snippet, I'll quickly validate its effectiveness so we can focus more on areas that need improvement. However, if we encounter bugs or logic errors, we'll spend more time dissecting and understanding these areas. After all, they say laughter is the best medicine, but it's never fixed a bug! Here's a joke to get us started: Why don't programmers like nature? It has too many bugs! But remember, while I'll do my best to guide and assist, there may be areas beyond my scope. If that's the case, I'll suggest relevant resources or alternative methods for you to find the answers you need. Let's debug, learn, and maybe even have a few laughs along the way.",
                };
-               let userMessages = JSON.parse(localStorage.getItem("userMessages")) || [];
+               let userMessages = [];
                let assistantMessages = [];
                function escapeHtml(text) {
                    return text.replace(/[&<>"']/g, (match) => `&#${match.charCodeAt(0)};`);
@@ -142,17 +142,13 @@
                    addMessageToChatbox("user", code);
                    chatInput.value = "";
                    chatbox.scrollTop = chatbox.scrollHeight;
-                   const lastMessage = userMessages[userMessages.length - 1];
-                   if (!lastMessage || (lastMessage && lastMessage.content !== code)) {
-                       userMessages.push({
-                           role: "user",
-                           content: code,
-                       });
-                       // Keep only the last 10 user messages
-                       if (userMessages.length > 10) {
-                           userMessages = userMessages.slice(userMessages.length - 10);
-                       }
-                       localStorage.setItem("userMessages", JSON.stringify(userMessages));
+                   userMessages.push({
+                       role: "user",
+                       content: code,
+                   });
+                   // Keep only the last 10 user messages
+                   if (userMessages.length > 10) {
+                       userMessages = userMessages.slice(userMessages.length - 10);
                    }
                    sendRequest(code);
                }
