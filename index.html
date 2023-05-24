@@ -138,7 +138,7 @@
 			            return;
 			        }
 			        // Remove extra new lines
-			        code = code.replace(/(\r\n|\n|\r)+/gm, "\n");
+					code = code.replace(/(\s*\r\n|\s*\n|\s*\r)+/gm, "\n");
 			        addMessageToChatbox("user", code);
 			        chatInput.value = "";
 			        chatbox.scrollTop = chatbox.scrollHeight;
