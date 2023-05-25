@@ -148,15 +148,15 @@
 			        addMessageToChatbox("user", code);
 			        chatInput.value = "";
 			        chatbox.scrollTop = chatbox.scrollHeight;
+                    // Keep only the last 10 user messages
+                    if (userMessages.length > 10) {
+                        userMessages = userMessages.slice(userMessages.length - 10);
+                    }
 			        userMessages.push({
 			            role: "user",
 			            content: code,
 			            timestamp: new Date().getTime()
 			        });
-			        // Keep only the last 10 user messages
-			        if (userMessages.length > 10) {
-			            userMessages = userMessages.slice(userMessages.length - 10);
-			        }
 			        sendRequest(code);
 			    }
 			    function sendRequest(code) {
@@ -193,15 +193,15 @@
 			            loader.style.display = "none";
 			            const chat = json["choices"][0]["message"]["content"];
 			            addMessageToChatbox("ai", chat);
+                        // Keep only the last 10 assistant messages
+                        if (assistantMessages.length > 10) {
+                            assistantMessages = assistantMessages.slice(assistantMessages.length - 10);
+                        }
 			            assistantMessages.push({
 			                role: "assistant",
 			                content: chat,
 			                timestamp: new Date().getTime()
 			            });
-			            // Keep only the last 10 assistant messages
-			            if (assistantMessages.length > 10) {
-			                assistantMessages = assistantMessages.slice(assistantMessages.length - 10);
-			            }
 			        })
 			        .catch((error) => {
 			            loader.style.display = "none";
