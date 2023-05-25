@@ -161,19 +161,7 @@
 			    }
 			    function sendRequest(code) {
 			        loader.style.display = "block";
-			        let messagesToSend = [systemMessage];
-			        // Filter out duplicate user messages
-			        messagesToSend = messagesToSend.concat(userMessages.filter((msg, index, self) =>
-			            index === self.findIndex((t) => (
-			                t.content === msg.content
-			            ))
-			        ));
-			        // Filter out duplicate assistant messages
-			        messagesToSend = messagesToSend.concat(assistantMessages.filter((msg, index, self) =>
-			            index === self.findIndex((t) => (
-			                t.content === msg.content
-			            ))
-			        ));
+					let messagesToSend = [systemMessage].concat(userMessages, assistantMessages);
 			        // Sort messages by timestamp
 			        messagesToSend.sort((a, b) => a.timestamp - b.timestamp);
 			        const data = {
