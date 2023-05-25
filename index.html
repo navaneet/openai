@@ -115,6 +115,7 @@
 			        return text.replace(/[&<>"']/g, (match) => `&#${match.charCodeAt(0)};`);
 			    }
 			    function addMessageToChatbox(role, content) {
+			        const timestamp = new Date().getTime();
 			        const newMessageId = "message-" + messageId;
 			        const messageHtml = `<div id="${newMessageId}" class="${role}-message"><b>${role.charAt(0).toUpperCase() + role.slice(1)}:</b> <pre>${escapeHtml(content)}</pre></div>`;
 			        chatbox.innerHTML += messageHtml;
@@ -122,6 +123,11 @@
 			        newMessageElement.scrollIntoView();
 			        messageId += 1;
 			        chatbox.scrollTop -= 20;
+			        return {
+			            role: role,
+			            content: content,
+			            timestamp: timestamp
+			        };
 			    }
 			    window.checkEnter = function (e) {
 			        if (e.key === "Enter" && !e.shiftKey) {
@@ -145,6 +151,7 @@
 			        userMessages.push({
 			            role: "user",
 			            content: code,
+			            timestamp: new Date().getTime()
 			        });
 			        // Keep only the last 10 user messages
 			        if (userMessages.length > 10) {
@@ -167,13 +174,10 @@
 			                t.content === msg.content
 			            ))
 			        ));
-			        // Add the current message
-			        messagesToSend.push({
-			            role: "user",
-			            content: code,
-			        });
+			        // Sort messages by timestamp
+			        messagesToSend.sort((a, b) => a.timestamp - b.timestamp);
 			        const data = {
-			            messages: messagesToSend,
+			            messages: messagesToSend.map(msg => ({ role: msg.role, content: msg.content })),
 			            temperature: 0.4,
 			            top_p: 0.9,
 			            frequency_penalty: 0,
@@ -204,6 +208,7 @@
 			            assistantMessages.push({
 			                role: "assistant",
 			                content: chat,
+			                timestamp: new Date().getTime()
 			            });
 			            // Keep only the last 10 assistant messages
 			            if (assistantMessages.length > 10) {
