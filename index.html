@@ -1,215 +1,215 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-		<title>Code Review Chat with AI</title>
-		<style>
-			body {
-			    font-family: Arial, sans-serif;
-			    background-color: #f5f5f5; /* lighter grey color */
-			    padding: 3.6%;
-			    margin: 0;
-			}
-			#chatbox {
-			    border: 2px solid #ddd;
-			    border-radius: 5px;
-			    padding: 20px;
-			    background-color: white;
-			    height: 350px;
-			    overflow-y: auto;
-			    margin-bottom: 20px;
-			}
-			#chat-input {
-			    height: 110px;
-			    width: 100%;
-			    padding: 10px;
-			    box-sizing: border-box;
-			    border: 2px solid #ddd;
-			    border-radius: 5px;
-			    font-size: 1.2em;
-			    line-height: 1.5;
-			}
-			.user-message,
-			.ai-message {
-			    border: 1px solid #ddd;
-			    border-radius: 5px;
-			    padding: 10px;
-			    margin-bottom: 10px;
-			    line-height: 1.7;
-			    word-wrap: break-word;
-			    white-space: pre-wrap;
-			    display: block;
-			    overflow-wrap: break-word;
-			    max-width: 100%;
-			}
-			.user-message pre,
-			.ai-message pre {
-			    white-space: pre-wrap; /* css-3 */
-			    white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
-			    white-space: -pre-wrap; /* Opera 4-6 */
-			    white-space: -o-pre-wrap; /* Opera 7 */
-			    word-wrap: break-word; /* Internet Explorer 5.5+ */
-			}
-			.user-message {
-			    color: blue;
-			    background-color: #f0f8ff; /* light blue */
-			    margin-left: 0px;
-			}
-			.ai-message {
-			    color: red;
-			    background-color: #fff0f5; /* light red */
-			    margin-right: 0px;
-			}
-			#loader {
-			    display: none;
-			    font-size: 1.2em;
-			    text-align: center;
-			    padding: 10px;
-			    border: 1px solid #ddd;
-			    border-radius: 5px;
-			    background-color: #fafafa;
-			    margin-bottom: 20px;
-			    color: #444;
-			    animation: loaderAnimation 2s linear infinite;
-			}
-			@keyframes loaderAnimation {
-			    0% {
-			        opacity: 0;
-			    }
-			    50% {
-			        opacity: 1;
-			    }
-			    100% {
-			        opacity: 0;
-			    }
-			}
-			pre {
-			    font-family: "Courier New", monospace;
-			    white-space: pre;
-			    margin: 0;
-			}
-		</style>
-	</head>
-	<body>
-		<div id="chatbox"></div>
-		<div id="loader">Thinking...</div>
-		<textarea id="chat-input" placeholder="Press Enter to send your message. Shift + Enter to add a new line" onkeydown="checkEnter(event)" spellcheck="true"></textarea>
-		<script>
-			window.onload = function () {
-			    localStorage.clear();
-			    let messageId = 0; // initialize messageId here
-			    const chatbox = document.getElementById("chatbox");
-			    const chatInput = document.getElementById("chat-input");
-			    const loader = document.getElementById("loader");
-			    const API_ENDPOINT = "https://aoai-2-sub2.openai.azure.com/openai/deployments/gpt-35-turbo/chat/completions?api-version=2023-03-15-preview";
-			    const API_KEY = "60878cc488ea4918bede2ab72b9a6b97";
-			    const systemMessage = {
-			        role: "system",
-			        content:
-			            "Welcome to the code review tool powered by GPT-3.5! I can assist with understanding your code, spotting potential issues, and providing explanations on software engineering concepts, all with a light-hearted approach! However, if we encounter bugs or logic errors, we'll spend more time dissecting and understanding these areas. As a leading expert on these topics with an IQ of 120, I will try to find unexpected, non-obvious insights and potential issues from the given text and offer plausible explanations for them. Here's how it works: simply paste your code in the chat, and I'll analyze it for you. After reviewing your code, I'll provide detailed and accurate suggestions for improvement. But remember, while I'll do my best to guide and assist, there may be areas beyond my scope. If that's the case, I'll suggest relevant resources or alternative methods for you to find the answers you need.",
-			    };
-			    let userMessages = [];
-			    let assistantMessages = [];
-			    function escapeHtml(text) {
-			        return text.replace(/[&<>"']/g, (match) => `&#${match.charCodeAt(0)};`);
-			    }
-			    function addMessageToChatbox(role, content) {
-			        const timestamp = new Date().getTime();
-			        const newMessageId = "message-" + messageId;
-			        const messageHtml = `<div id="${newMessageId}" class="${role}-message"><b>${role.charAt(0).toUpperCase() + role.slice(1)}:</b> <pre>${escapeHtml(content)}</pre></div>`;
-			        chatbox.innerHTML += messageHtml;
-			        const newMessageElement = document.getElementById(newMessageId);
-			        newMessageElement.scrollIntoView();
-			        messageId += 1;
-			        chatbox.scrollTop -= 20;
-			        return {
-			            role: role,
-			            content: content,
-			            timestamp: timestamp
-			        };
-			    }
-			    window.checkEnter = function (e) {
-			        if (e.key === "Enter" && !e.shiftKey) {
-			            e.preventDefault();
-			            sendMessage();
-			            if ('ontouchstart' in window) {
-			                chatInput.blur();
-			            }
-			        }
-			    };
-			    function sendMessage() {
-			        let code = chatInput.value.trim();
-			        if (code === "") {
-			            return;
-			        }
-			        // Remove extra new lines
-					code = code.replace(/(\s*\r\n|\s*\n|\s*\r)+/gm, "\n");
-			        addMessageToChatbox("user", code);
-			        chatInput.value = "";
-			        chatbox.scrollTop = chatbox.scrollHeight;
-                    // Keep only the last 10 user messages
-                    if (userMessages.length > 10) {
-                        userMessages = userMessages.slice(userMessages.length - 10);
-                    }
-			        userMessages.push({
-			            role: "user",
-			            content: code,
-			            timestamp: new Date().getTime()
-			        });
-			        sendRequest(code);
-			    }
-			    function sendRequest(code) {
-			        loader.style.display = "block";
-					let messagesToSend = [systemMessage].concat(userMessages, assistantMessages);
-			        // Sort messages by timestamp
-			        messagesToSend.sort((a, b) => a.timestamp - b.timestamp);
-			        const data = {
-			            messages: messagesToSend.map(msg => ({ role: msg.role, content: msg.content })),
-			            temperature: 0.4,
-			            top_p: 0.9,
-			            frequency_penalty: 0,
-			            presence_penalty: 0,
-			            max_tokens: 4000,
-			            stop: null,
-			        };
-			        fetch(API_ENDPOINT, {
-			            method: "POST",
-			            headers: {
-			                "Content-Type": "application/json",
-			                "api-key": API_KEY,
-			            },
-			            body: JSON.stringify(data),
-			        })
-			        .then((response) => {
-			            if (!response.ok) {
-			                return response.json().then(err => {
-			                    throw new Error(err.error.message);
-			                });
-			            }
-			            return response.json();
-			        })
-			        .then((json) => {
-			            loader.style.display = "none";
-			            const chat = json["choices"][0]["message"]["content"];
-			            addMessageToChatbox("ai", chat);
-                        // Keep only the last 10 assistant messages
-                        if (assistantMessages.length > 10) {
-                            assistantMessages = assistantMessages.slice(assistantMessages.length - 10);
-                        }
-			            assistantMessages.push({
-			                role: "assistant",
-			                content: chat,
-			                timestamp: new Date().getTime()
-			            });
-			        })
-			        .catch((error) => {
-			            loader.style.display = "none";
-			            const errorMessage = `Request failed: ${error.message}`;
-			            addMessageToChatbox("ai", errorMessage);
-			        });
-			    }
-			};
-		</script>
-	</body>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <title>Code Review Chat with AI</title>
+    <style>
+      body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5; /* lighter grey color */
+      padding: 3.6%;
+      margin: 0;
+      }
+      #chatbox {
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      padding: 20px;
+      background-color: white;
+      height: 350px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+      }
+      #chat-input {
+      height: 110px;
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      font-size: 1.2em;
+      line-height: 1.5;
+      }
+      .user-message,
+      .ai-message {
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 10px;
+      line-height: 1.7;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      display: block;
+      overflow-wrap: break-word;
+      max-width: 100%;
+      }
+      .user-message pre,
+      .ai-message pre {
+      white-space: pre-wrap; /* css-3 */
+      white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+      white-space: -pre-wrap; /* Opera 4-6 */
+      white-space: -o-pre-wrap; /* Opera 7 */
+      word-wrap: break-word; /* Internet Explorer 5.5+ */
+      }
+      .user-message {
+      color: blue;
+      background-color: #f0f8ff; /* light blue */
+      margin-left: 0px;
+      }
+      .ai-message {
+      color: red;
+      background-color: #fff0f5; /* light red */
+      margin-right: 0px;
+      }
+      #loader {
+      display: none;
+      font-size: 1.2em;
+      text-align: center;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #fafafa;
+      margin-bottom: 20px;
+      color: #444;
+      animation: loaderAnimation 2s linear infinite;
+      }
+      @keyframes loaderAnimation {
+      0% {
+      opacity: 0;
+      }
+      50% {
+      opacity: 1;
+      }
+      100% {
+      opacity: 0;
+      }
+      }
+      pre {
+      font-family: "Courier New", monospace;
+      white-space: pre;
+      margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chatbox"></div>
+    <div id="loader">Thinking...</div>
+    <textarea id="chat-input" placeholder="Press Enter to send your message. Shift + Enter to add a new line" onkeydown="checkEnter(event)" spellcheck="true"></textarea>
+    <script>
+      window.onload = function () {
+          localStorage.clear();
+          let messageId = 0; // initialize messageId here
+          const chatbox = document.getElementById("chatbox");
+          const chatInput = document.getElementById("chat-input");
+          const loader = document.getElementById("loader");
+          const API_ENDPOINT = "https://aoai-2-sub2.openai.azure.com/openai/deployments/gpt-35-turbo/chat/completions?api-version=2023-03-15-preview";
+          const API_KEY = "60878cc488ea4918bede2ab72b9a6b97";
+          const systemMessage = {
+              role: "system",
+              content:
+                  "Welcome to the code review tool powered by GPT-3.5! I can assist with understanding your code, spotting potential issues, and providing explanations on software engineering concepts, all with a light-hearted approach! However, if we encounter bugs or logic errors, we'll spend more time dissecting and understanding these areas. I will try to find unexpected, non-obvious insights and potential issues from the given text and offer plausible explanations for them. Here's how it works: simply paste your code in the chat, and I'll analyze it for you. After reviewing your code, I'll provide detailed and accurate suggestions for improvement. But remember, while I'll do my best to guide and assist, there may be areas beyond my scope. If that's the case, I'll suggest relevant resources or alternative methods for you to find the answers you need.",
+          };
+          let userMessages = [];
+          let assistantMessages = [];
+          function escapeHtml(text) {
+              return text.replace(/[&<>"']/g, (match) => `&#${match.charCodeAt(0)};`);
+          }
+          function addMessageToChatbox(role, content) {
+              const timestamp = new Date().getTime();
+              const newMessageId = "message-" + messageId;
+              const messageHtml = `<div id="${newMessageId}" class="${role}-message"><b>${role.charAt(0).toUpperCase() + role.slice(1)}:</b> <pre>${escapeHtml(content)}</pre></div>`;
+              chatbox.innerHTML += messageHtml;
+              const newMessageElement = document.getElementById(newMessageId);
+              newMessageElement.scrollIntoView();
+              messageId += 1;
+              chatbox.scrollTop -= 20;
+              return {
+                  role: role,
+                  content: content,
+                  timestamp: timestamp
+              };
+          }
+          window.checkEnter = function (e) {
+              if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage();
+                  if ('ontouchstart' in window) {
+                      chatInput.blur();
+                  }
+              }
+          };
+          function sendMessage() {
+              let code = chatInput.value.trim();
+              if (code === "") {
+                  return;
+              }
+              // Remove extra new lines
+      		code = code.replace(/(\s*\r\n|\s*\n|\s*\r)+/gm, "\n");
+              addMessageToChatbox("user", code);
+              chatInput.value = "";
+              chatbox.scrollTop = chatbox.scrollHeight;
+                       // Keep only the last 10 user messages
+                       if (userMessages.length > 10) {
+                           userMessages = userMessages.slice(userMessages.length - 10);
+                       }
+              userMessages.push({
+                  role: "user",
+                  content: code,
+                  timestamp: new Date().getTime()
+              });
+              sendRequest(code);
+          }
+          function sendRequest(code) {
+              loader.style.display = "block";
+      		let messagesToSend = [systemMessage].concat(userMessages, assistantMessages);
+              // Sort messages by timestamp
+              messagesToSend.sort((a, b) => a.timestamp - b.timestamp);
+              const data = {
+                  messages: messagesToSend.map(msg => ({ role: msg.role, content: msg.content })),
+                  temperature: 0.4,
+                  top_p: 0.9,
+                  frequency_penalty: 0,
+                  presence_penalty: 0,
+                  max_tokens: 4000,
+                  stop: null,
+              };
+              fetch(API_ENDPOINT, {
+                  method: "POST",
+                  headers: {
+                      "Content-Type": "application/json",
+                      "api-key": API_KEY,
+                  },
+                  body: JSON.stringify(data),
+              })
+              .then((response) => {
+                  if (!response.ok) {
+                      return response.json().then(err => {
+                          throw new Error(err.error.message);
+                      });
+                  }
+                  return response.json();
+              })
+              .then((json) => {
+                  loader.style.display = "none";
+                  const chat = json["choices"][0]["message"]["content"];
+                  addMessageToChatbox("ai", chat);
+                           // Keep only the last 10 assistant messages
+                           if (assistantMessages.length > 10) {
+                               assistantMessages = assistantMessages.slice(assistantMessages.length - 10);
+                           }
+                  assistantMessages.push({
+                      role: "assistant",
+                      content: chat,
+                      timestamp: new Date().getTime()
+                  });
+              })
+              .catch((error) => {
+                  loader.style.display = "none";
+                  const errorMessage = `Request failed: ${error.message}`;
+                  addMessageToChatbox("ai", errorMessage);
+              });
+          }
+      };
+    </script>
+  </body>
 </html>
